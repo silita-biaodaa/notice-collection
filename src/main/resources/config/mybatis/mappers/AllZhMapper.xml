@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.dao.AllZhMapper">
+
+    <select id="listAllZh" resultType="Map">
+        SELECT `name`
+        FROM mishu.all_zh
+        WHERE rank != '' AND finalUuid != '' AND finalUuid IS NOT NULL
+    </select>
+
+</mapper>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.dao.AllPageIncrementMapper">
+
+    <select id="listAllPageIncrement" parameterType="String" resultType="Map">
+        SELECT currentAllPage,snatch_opendate
+        FROM mishu_snatch.allpage_increment
+        WHERE url = #{url}
+        ORDER BY catchDate DESC limit 1
+    </select>
+
+    <insert id="insertAllPageIncrement" parameterType="Map">
+      INSERT INTO mishu_snatch.allpage_increment(
+       `currentAllPage`, `lastAllPage`, `url`, `catchDate`, `snatch_opendate`
+      )
+      VALUES(
+        #{currentAllPage}, #{lastAllPage} ,#{url}, NOW(), #{openDate}
+      )
+    </insert>
+</mapper>

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p" xmlns:cache="http://www.springframework.org/schema/cache"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+   	   http://www.springframework.org/schema/aop
+   	   http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.0.xsd
+       http://www.springframework.org/schema/cache
+       http://www.springframework.org/schema/cache/spring-cache.xsd
+">
+
+    <!--#####echcache start  ####  -->
+    <cache:annotation-driven cache-manager="cacheManager"/>
+    <!-- cacheManager工厂类，指定ehcache.xml的位置 -->
+    <bean id="cacheManagerFactory" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"
+          p:configLocation="classpath:config/cache/ehcache.xml" p:shared="true"/>
+    <!-- 声明cacheManager -->
+    <bean id="cacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager"
+          p:cacheManager-ref="cacheManagerFactory"/>
+    <!-- ####echcache end ####-->
+
+
+    <context:annotation-config/>
+    <context:component-scan base-package="com.silita, com.snatch"/>
+    <!--<context:property-placeholder location="classpath:database.properties,classpath:redis.properties" ignore-unresolvable="true"/>-->
+    <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list>
+                <value>classpath:config/collection.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="dataSource" class="com.jolbox.bonecp.BoneCPDataSource" destroy-method="close">
+        <!-- 数据库驱动，应对双11，改大的，为线上连接数 -->
+        <property name="driverClass" value="${jdbc.driverClassName}"/>
+        <property name="jdbcUrl" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+        <!-- 检查数据库连接池中空闲连接的间隔时间，单位是分，默认值为5分钟-->
+        <property name="idleConnectionTestPeriodInSeconds" value="300"/>
+        <property name="connectionTestStatement" value="SELECT 1"/>
+        <!-- 连接池中未使用的链接最大存活时间，当前设置为5分钟 -->
+        <property name="idleMaxAgeInSeconds" value="300"/>
+        <property name="partitionCount" value="1"/>
+        <property name="maxConnectionsPerPartition" value="100"/>
+        <property name="minConnectionsPerPartition" value="10"/>
+        <property name="acquireIncrement" value="5"/>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="configLocation" value="classpath:config/mybatis/mybatis-config.xml"></property>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath*:config/mybatis/mappers/*.xml</value>
+            </list>
+        </property>
+    </bean>
+    <!-- spring与mybatis整合配置，扫描所有dao -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"
+          p:basePackage="com.silita.dao" p:sqlSessionFactoryBeanName="sqlSessionFactory"/>
+    <!---/**配置事务管理**/-->
+    <bean id="txManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <tx:advice id="txAdvice" transaction-manager="txManager">
+        <tx:attributes>
+            <tx:method name="insert*" propagation="REQUIRED"/>
+            <tx:method name="update*" propagation="REQUIRED"/>
+            <tx:method name="edit*" propagation="REQUIRED"/>
+            <tx:method name="save*" propagation="REQUIRED"/>
+            <tx:method name="add*" propagation="REQUIRED"/>
+            <tx:method name="new*" propagation="REQUIRED"/>
+            <tx:method name="set*" propagation="REQUIRED"/>
+            <tx:method name="remove*" propagation="REQUIRED"/>
+            <tx:method name="delete*" propagation="REQUIRED"/>
+            <tx:method name="change*" propagation="REQUIRED"/>
+            <tx:method name="check*" propagation="REQUIRED"/>
+            <tx:method name="create*" propagation="REQUIRED"/>
+            <tx:method name="get*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="find*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="load*" propagation="REQUIRED" read-only="true"/>
+            <tx:method name="*" propagation="REQUIRED" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+    <aop:config>
+        <aop:pointcut id="testPointcut"
+                      expression="execution(* com.silita.service.*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="testPointcut"/>
+    </aop:config>
+
+    <!-- #############redis配置  start################# -->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+        <!--新版是maxTotal，旧版是maxActive-->
+        <property name="maxTotal">
+            <value>${redis.pool.maxTotal}</value>
+        </property>
+        <property name="maxIdle">
+            <value>${redis.pool.maxIdle}</value>
+        </property>
+        <property name="minIdle">
+            <value>${redis.pool.minIdle}</value>
+        </property>
+        <property name="maxWaitMillis">
+            <value>${redis.pool.maxWaitMillis}</value>
+        </property>
+        <property name="minEvictableIdleTimeMillis">
+            <value>${redis.pool.minEvictableIdleTimeMillis}</value>
+        </property>
+        <property name="numTestsPerEvictionRun">
+            <value>${redis.pool.numTestsPerEvictionRun}</value>
+        </property>
+        <property name="timeBetweenEvictionRunsMillis">
+            <value>${redis.pool.timeBetweenEvictionRunsMillis}</value>
+        </property>
+        <property name="testOnBorrow" value="true"/>
+        <property name="testOnReturn" value="true"/>
+    </bean>
+
+    <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
+        <constructor-arg index="0" ref="jedisPoolConfig"/>
+        <property name="hostName">
+            <value>${redis.host}</value>
+        </property>
+        <property name="port">
+            <value>${redis.port}</value>
+        </property>
+        <property name="password">
+            <value>${redis.password}</value>
+        </property>
+        <property name="timeout">
+            <value>${redis.timeout}</value>
+        </property>
+        <property name="usePool">
+            <value>true</value>
+        </property>
+    </bean>
+
+    <bean id="stringRedisSerializer" class="org.springframework.data.redis.serializer.StringRedisSerializer"></bean>
+
+    <bean id="redisTemplate" class="org.springframework.data.redis.core.RedisTemplate">
+        <property name="defaultSerializer">
+            <ref bean="stringRedisSerializer"/>
+        </property>
+        <property name="connectionFactory">
+            <ref bean="jedisConnectionFactory"/>
+        </property>
+    </bean>
+
+    <bean id="redisQueue" class="com.silita.commons.redisJMS.RedisQueue">
+        <constructor-arg index="0">
+            <ref bean="redisTemplate"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <value>${redis.redisQueue.name}</value>
+        </constructor-arg>
+    </bean>
+
+    <bean id="jedisPool" class=" redis.clients.jedis.JedisPool">
+        <constructor-arg index="0">
+            <ref bean="jedisPoolConfig"/>
+        </constructor-arg>
+        <constructor-arg index="1">
+            <value>${redis.host}</value>
+        </constructor-arg>
+        <constructor-arg index="2">
+            <value>${redis.port}</value>
+        </constructor-arg>
+        <constructor-arg index="3">
+            <value>${redis.timeout}</value>
+        </constructor-arg>
+        <constructor-arg index="4" value="${redis.password}"/>
+    </bean>
+    <!-- #############redis配置  end################# -->
+
+    <!--<import resource="classpath*:config/spring/applicationcontext-xxl-job.xml"></import>-->
+</beans>

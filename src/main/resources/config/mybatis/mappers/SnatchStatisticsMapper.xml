@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.dao.SnatchStatisticsMapper">
+
+    <insert id="insertSnatchStatistics" parameterType="com.snatch.model.TbSnatchStatistics">
+        INSERT INTO mishu_snatch.tb_snatch_statistics(
+          `source`, `site_name`, `notice_total`, `zhaobiao_total`, `zhongbiao_total`,
+          `other_total`, `exception_total`, `url_total`, `class_page_num`, `class_date_difference`,
+          `execute_date`, `site_domain_name`, `created`
+        )
+        VALUES(
+          #{source}, #{siteName}, #{noticeTotal}, #{zhaobiaoTotal}, #{zhongbiaoTotal},
+          #{otherTotal}, #{exceptionTotal}, #{urlTotal}, #{classPageNum}, #{classDateDifference},
+          #{executeDate}, #{siteDomainName}, NOW()
+        )
+    </insert>
+</mapper>

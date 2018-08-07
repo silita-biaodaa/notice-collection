@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.dao.SnatchExceptionMapper">
+
+    <insert id="insertSnatchException" parameterType="com.snatch.model.SnatchException">
+        INSERT INTO mishu_snatch.snatch_exception (
+		  `exName`, `exUrl`, `exDesc`, `exRank`, `exTime`,
+		  `exClass`, `noticeTitle`, `noticeOpendate`, `catchType, provinceCode`,
+		  `cityCode`, `countyCode`, `status`, `type`, `site_classify`
+		)
+		VALUES(
+		  #{exName}, #{exUrl}, #{exDesc}, #{exRank}, #{exTime},
+		  #{exClass}, #{noticeTitle}, #{noticeOpendate}, #{catchType}, #{provinceCode},
+	      #{cityCode}, #{countyCode}, #{status}, #{type}, #{sityClassify}
+		)
+    </insert>
+
+    <update id="updateSnatchException" parameterType="com.snatch.model.SnatchException">
+        UPDATE mishu_snatch.snatch_exception
+        SET
+        `exName` = #{exName}, `exDesc` = #{exDesc}, `exRank` = #{exRank}, `exTime` = NOW(), `exClass` = #{exClass},
+		`noticeTitle` = #{noticeTitle}, `noticeOpendate` = #{noticeOpendate}, `catchType` = #{catchType}, `provinceCode` = #{provinceCode}, `cityCode` = #{cityCode},
+		`countyCode` = #{countyCode},`status` = 0, `type` = #{type}, `site_classify` = #{sityClassify}
+		WHERE exUrl = #{exUrl}
+    </update>
+
+    <select id="getSnatchExceptionTotalByUrl" parameterType="String" resultType="Integer">
+        SELECT COUNT(1)
+        FROM mishu_snatch.snatch_exception
+        WHERE exUrl = #{url}
+    </select>
+
+	<select id="updateSnatchExceptionStatus" parameterType="String">
+		UPDATE mishu_snatch.snatch_exception SET `status`=1 WHERE exUrl = #{url}
+	</select>
+
+	<select id="getSnatchExceptionTotal" parameterType="String" resultType="Integer">
+		SELECT COUNT(*)
+		FROM mishu_snatch.snatch_exception
+		WHERE DATE(exTime) = CURDATE() AND site_classify LIKE CONCAT('%', '${siteClassify}', '%')
+	</select>
+
+	<select id="listSnatchExceptionByExClass" parameterType="String" resultType="com.snatch.model.SnatchException">
+		SELECT * FROM mishu_snatch.snatch_exception
+		WHERE exClass =#{exClass} AND status=0 AND exRank!=55
+	</select>
+</mapper>

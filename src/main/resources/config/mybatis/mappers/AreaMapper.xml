@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.dao.AreaMapper">
+
+    <select id="findBlurArea" parameterType="String" resultType="com.snatch.model.Area">
+        SELECT id,parent_id,`name`,name_abbr,grade FROM mishu.area WHERE `name` LIKE CONCAT('%', '${name}', '%')
+    </select>
+
+    <select id="queryProvArea" parameterType="String" resultType="com.snatch.model.Area">
+        SELECT id,parent_id,`name`,name_abbr,grade
+        FROM mishu.area
+        WHERE `name` LIKE CONCAT('%', '${name}', '%') AND grade = 0
+    </select>
+
+    <select id="querysCityCode" parameterType="String" resultType="Map">
+      SELECT name,name_abbr
+      FROM mishu.area
+      WHERE grade = 1 AND display_name LIKE CONCAT('%', '${province}', '%')
+    </select>
+</mapper>

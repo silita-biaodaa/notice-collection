@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.silita.dao.NoticeMapper">
+
+    <select id="checkTableIsExist" parameterType="String" resultType="Integer">
+      SELECT COUNT(*) FROM information_schema.TABLES WHERE table_name = '${tableName}'
+    </select>
+
+    <update id="createNoticeTable" parameterType="String">
+      CREATE TABLE `${tableName}`(
+                `id` int(13) NOT NULL AUTO_INCREMENT,
+                `redisId` int(13) DEFAULT NULL,
+                `title` varchar(500) DEFAULT NULL COMMENT '公告标题',
+                `openDate` varchar(13) DEFAULT NULL COMMENT '公示日期',
+                `content` longtext COMMENT '公告内容',
+                `url` varchar(500) DEFAULT NULL COMMENT '公告url',
+                `pdfUrl` varchar(500) DEFAULT NULL COMMENT '公告内容为pdf的url',
+                `noticeType` varchar(200) DEFAULT NULL COMMENT '公告类别',
+                `catchType` varchar(200) DEFAULT NULL COMMENT '公告类型。0：其他，1：招标，2：中标，4：代理招标，5：代理中标，6：补充，7：延期，8：招标控制价',
+                `photoUrl` varchar(500) DEFAULT NULL COMMENT '公告内容为照片的url',
+                `province` varchar(50) DEFAULT NULL COMMENT '省',
+                `city` varchar(50) DEFAULT NULL COMMENT '市',
+                `county` varchar(50) DEFAULT NULL COMMENT '县',
+                `provinceCode` varchar(50) DEFAULT NULL COMMENT '省级地区Code',
+                `cityCode` varchar(50) DEFAULT NULL COMMENT '市级地区Code',
+                `countyCode` varchar(50) DEFAULT NULL COMMENT '地区Code',
+                `catchDate` datetime DEFAULT NULL COMMENT '抓取日期和时间',
+                `areaCode` varchar(50) DEFAULT NULL,
+                `type` varchar(1) DEFAULT NULL COMMENT '0：采购 1：工程',
+                `snatchNumber` varchar(30) DEFAULT NULL COMMENT '抓取批次',
+                `areaRank` varchar(1) DEFAULT NULL COMMENT '地区等级  // 0：省 ， 1：市 ，2：县',
+                `cert` varchar(100) DEFAULT NULL COMMENT '资质',
+                `projDq` varchar(20) DEFAULT NULL COMMENT '项目地区',
+                `projXs` varchar(50) DEFAULT NULL COMMENT '项目县市',
+                `projType` varchar(20) DEFAULT NULL COMMENT '项目类型',
+                `projSum` varchar(50) DEFAULT NULL COMMENT '项目金额',
+                `pbMode` varchar(30) DEFAULT NULL COMMENT '评标办法',
+                `bmStartDate` varchar(20) DEFAULT NULL COMMENT '报名开始时间',
+                `bmEndDate` varchar(20) DEFAULT NULL COMMENT '报名结束时间',
+                `bmEndTime` varchar(10) DEFAULT NULL COMMENT '报名结束时间点',
+                `bmSite` varchar(100) DEFAULT NULL COMMENT '报名地点',
+                `tbAssureSum` varchar(50) DEFAULT NULL COMMENT '投标保证金额',
+                `lyAssureSum` varchar(50) DEFAULT NULL COMMENT '履约保证金',
+                `slProveSum` varchar(50) DEFAULT NULL COMMENT '其他证明金',
+                `tbAssureEndDate` varchar(20) DEFAULT NULL COMMENT '投标保证金截止时间',
+                `tbAssureEndTime` varchar(10) DEFAULT NULL COMMENT '投标保证金截止时点',
+                `assureEndDate` varchar(20) DEFAULT NULL COMMENT '保证金截止时间',
+                `assureEndTime` varchar(10) DEFAULT NULL COMMENT '保证金截止时点',
+               `tbEndDate` varchar(20) DEFAULT NULL COMMENT '投标截止时间',
+                `tbEndTime` varchar(10) DEFAULT NULL COMMENT '投标截止时点',
+                `kbSite` varchar(100) DEFAULT NULL COMMENT '开标地点',
+                `registrationForm` varchar(50) DEFAULT NULL COMMENT '报名方式',
+                `block` varchar(5) DEFAULT NULL COMMENT '标段信息',
+                `zbName` varchar(50) DEFAULT NULL COMMENT '招标人',
+                `zbContactMan` varchar(50) DEFAULT NULL COMMENT '招标联系人',
+                `zbContactWay` varchar(50) DEFAULT NULL COMMENT '招标联系方式',
+                `dlName` varchar(50) DEFAULT NULL COMMENT '代理人',
+                `dlContactMan` varchar(50) DEFAULT NULL COMMENT '代理联系人',
+                `dlContactWay` varchar(50) DEFAULT NULL COMMENT '代理联系方式',
+                `oneName` varchar(150) DEFAULT NULL COMMENT '第一中标候选人',
+                `twoName` varchar(50) DEFAULT NULL COMMENT '第二中标候选人',
+                `threeName` varchar(50) DEFAULT NULL COMMENT '第三中标候选人',
+                `kbStaffAsk` varchar(50) DEFAULT NULL COMMENT '开标人员',
+                `fileCost` varchar(20) DEFAULT NULL COMMENT '标书费',
+                `oneOffer` varchar(50) DEFAULT NULL COMMENT '报价',
+                `projectTimeLimit` varchar(50) DEFAULT NULL COMMENT '项目工期',
+                `oneProjDuty` varchar(50) DEFAULT NULL COMMENT '项目负责人',
+                `file_url` varchar(500) DEFAULT NULL COMMENT '附件地址',
+                `relation_url` varchar(2500) DEFAULT NULL COMMENT '关联公告url',
+                `relation_title` varchar(1000) DEFAULT NULL COMMENT '关联公告title',
+                `source` varchar(20) DEFAULT NULL COMMENT '关联公告title',
+                `site_classify` varchar(500) DEFAULT NULL COMMENT '站点名称+分类url', 
+                PRIMARY KEY (`id`),
+                KEY `noticeType` (`noticeType`) USING BTREE,
+                KEY `catchDate` (`catchDate`) USING BTREE,
+                KEY `title` (`title`(255)) USING BTREE,
+                KEY `url` (`url`(255)) USING BTREE,
+                KEY `redisId` (`redisId`) USING BTREE,
+                KEY `openDate` (`openDate`) USING BTREE,
+                KEY `cityCode` (`cityCode`) USING BTREE,
+                KEY `provinceCode` (`provinceCode`) USING BTREE
+                ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+    </update>
+
+    <insert id="insertNotice" parameterType="Map">
+        <selectKey resultType="Integer" order="AFTER" keyProperty="id">
+            SELECT LAST_INSERT_ID() AS id
+        </selectKey>
+        INSERT INTO ${tableName} (
+        `redisId`, `title`, `openDate`, `content`, `url`,
+        `pdfUrl`, `catchType`, `noticeType`, `photoUrl`, `province`,
+        `city`, `county`, `areaCode`, `provinceCode`, `cityCode`,
+        `countyCode`, `type`, `catchDate`, `snatchNumber`, `areaRank`,
+        `source`, `site_classify`
+        <if test="dimension!=null">
+            ,`cert`, `projDq`, `projXs`, `projType`, `projSum`,
+            `pbMode`, `bmStartDate`, `bmEndDate`, `bmEndTime`, `bmSite`,
+            `tbAssureSum`, `lyAssureSum`, `slProveSum`, `tbAssureEndDate`, `tbAssureEndTime`,
+            `assureEndDate`, `assureEndTime`, `tbEndDate`, `tbEndTime`, `kbSite`,
+            `registrationForm`, `block`, `zbName`, `zbContactMan`, `zbContactWay`,
+            `dlName`, `dlContactMan`, `dlContactWay`, `oneName`, `twoName`,
+            `threeName`, `kbStaffAsk`, `fileCost`, `oneOffer`, `projectTimeLimit`,
+            `oneProjDuty`, `file_url`, `relation_url`, `relation_title`
+        </if>
+        )
+        VALUES (
+        #{notice.redisId}, #{notice.title}, #{notice.opendate}, #{notice.content}, #{notice.url},
+        #{notice.pdfURL}, #{notice.catchType}, #{notice.noticeType}, #{notice.photoUrl}, #{notice.province},
+        #{notice.city}, #{notice.county}, #{notice.areaCode}, #{notice.provinceCode}, #{notice.cityCode},
+        #{notice.countyCode}, #{notice.type}, NOW(), #{notice.snatchNumber}, #{notice.areaRank},
+        #{notice.source}, #{notice.sityClassify}
+        <if test="dimension!=null">
+            ,#{dimension.cert}, #{dimension.projDq}, #{dimension.projXs}, #{dimension.projType}, #{dimension.projSum},
+            #{dimension.pbMode}, #{dimension.bmStartDate}, #{dimension.bmEndDate}, #{dimension.bmEndTime}, #{dimension.bmSite},
+            #{dimension.tbAssureSum}, #{dimension.lyAssureSum}, #{dimension.slProveSum}, #{dimension.tbAssureEndDate}, #{dimension.tbAssureEndTime},
+            #{dimension.assureEndDate}, #{dimension.assureEndTime}, #{dimension.tbEndDate}, #{dimension.tbEndTime}, #{dimension.kbSite},
+            #{dimension.registrationForm}, #{dimension.block}, #{dimension.zbName}, #{dimension.zbContactMan}, #{dimension.zbContactWay},
+            #{dimension.dlName}, #{dimension.dlContactMan}, #{dimension.dlContactWay}, #{dimension.oneName}, #{dimension.twoName},
+            #{dimension.threeName}, #{dimension.kbStaffAsk}, #{dimension.fileCost}, #{dimension.oneOffer}, #{dimension.projectTimeLimit},
+            #{dimension.oneProjDuty}, #{dimension.file_url}, #{dimension.relation_url}, #{dimension.relation_title}
+        </if>
+        )
+    </insert>
+
+    <select id="getNoticeTotalByUrlAndOpenDate" parameterType="Map" resultType="Integer">
+        SELECT COUNT(*) FROM ${tableName}
+        WHERE `url` = #{url}
+        <if test="openDate != null and openDate != ''">
+          AND `openDate` = #{openDate}
+        </if>
+    </select>
+
+    <select id="getNoticeTotalsByUrlAndSnatchDate" parameterType="Map" resultType="Map">
+        SELECT COUNT(*) AS noticeTotal,
+        (SELECT COUNT(*) FROM ${tableName} WHERE catchDate > '${catchDate}' AND catchType = 1 AND url LIKE CONCAT('${url}', '%')) AS zhaobiaoTotal,
+        (SELECT COUNT(*) FROM ${tableName} WHERE catchDate > '${catchDate}' AND catchType = 2 AND url LIKE CONCAT('${url}', '%')) AS zhongbiaoTotal,
+        (SELECT COUNT(*) FROM ${tableName} WHERE catchDate > '${catchDate}' AND catchType != 1 AND catchType != 2 AND url LIKE CONCAT('${url}', '%')) AS otherTotal
+        FROM ${tableName} WHERE catchDate > '${catchDate}' AND url LIKE CONCAT('${url}', '%')
+    </select>
+</mapper>
