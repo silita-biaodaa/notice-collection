@@ -153,11 +153,11 @@ public class SiChuanggzyjyw extends BaseSnatch {
         Element content = null;
         if ("政府采购".equals(notice.getNoticeType())) {
             if (notice.getCatchType().equals(ZHAO_BIAO_TYPE)) {
-                content = docCount.select("div #divOne0").select("input").first();
+                content = docCount.select("#divOne0").select("input").first();
             } else if (notice.getCatchType().equals(GENG_ZHENG_TYPE)) {
-                content = docCount.select("div #divTwo0").select("input").first();
+                content = docCount.select("#divTwo0").select("input").first();
             } else if (notice.getCatchType().equals(ZHONG_BIAO_TYPE)) {
-                content = docCount.select("div #hidThree0").select("input").first();
+                content = docCount.select("#hidThree0").select("input").first();
             } else if (notice.getCatchType().equals(HE_TONG_TYPE)) {
                 content = docCount.select(".detailedIntroduc").last();
                 notice.setContent(content.text());
@@ -167,19 +167,19 @@ public class SiChuanggzyjyw extends BaseSnatch {
             }
         } else {
             if (notice.getCatchType().equals(ZHAO_BIAO_TYPE)) {
-                content = docCount.select("div #divOne0").select("input").first();
+                content = docCount.select("#divOne0").select("input").first();
             } else if (notice.getCatchType().equals(GENG_ZHENG_TYPE)) {
-                content = docCount.select("div #divTwo0").select("input").first();
+                content = docCount.select("#divTwo0").select("input").first();
             } else if (notice.getCatchType().equals(ZHONG_ZHI_TYPE)) {
-                content = docCount.select("div #divTwo0").select("input").first();
+                content = docCount.select("#divTwo0").select("input").first();
             } else if (notice.getCatchType().equals(ZHONG_BIAO_TYPE)) {
-                content = docCount.select("div #divSeven0").select("input").first();
+                content = docCount.select("#divSeven0").select("input").first();
             } else if (notice.getCatchType().equals(CHENG_QING_TYPE)) {
-                content = docCount.select("div #hidFive0").select("input").first();
+                content = docCount.select("#hidFive0").select("input").first();
             } else if (notice.getCatchType().equals(HE_TONG_TYPE)) {
-                content = docCount.select("div #divSix0").select("input").first();
+                content = docCount.select("#divSix0").select("input").first();
             } else {
-                content = docCount.select("div #divThree0").select("input").first();
+                content = docCount.select("#divThree0").select("input").first();
             }
             if(content != null && StringUtils.isEmpty(content.html())) {
                 notice.setContent(content.attr("value"));
