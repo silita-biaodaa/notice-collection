@@ -96,7 +96,7 @@ public class JiLinGongGongzyjyzx extends BaseSnatch {
                         url = urls[i].substring(0, urls[i].lastIndexOf("/") + 1) + pagelist + ".html";
                     }
                     SnatchLogger.debug("第" + pagelist + "页");
-                    conn = Jsoup.connect(url).userAgent("Mozilla").timeout(1000 * 60).ignoreContentType(true).ignoreHttpErrors(true);
+                    conn = Jsoup.connect(url).userAgent("Mozilla").timeout(2000 * 60).ignoreContentType(true).ignoreHttpErrors(true);
                     if(cookies != null) {
                         conn.cookies(cookies);
                     }
@@ -163,6 +163,7 @@ public class JiLinGongGongzyjyzx extends BaseSnatch {
 
     @Override
     public Notice detail(String href, Notice notice, String catchType) throws Exception {
+        Thread.sleep(1200);
         Document contdoc = Jsoup.parse(new URL(href).openStream(), "utf-8", href);
 //        String title = contdoc.select(".ewb-article-sources").first().previousElementSibling().text().trim();
         String content = contdoc.select(".MsoNormal").html();

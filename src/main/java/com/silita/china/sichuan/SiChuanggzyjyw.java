@@ -12,16 +12,16 @@ import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.util.StringUtils;
 
 import java.net.URL;
 
-import static com.snatch.common.SnatchContent.PROVINCE;
+import static com.snatch.common.SnatchContent.*;
 
 /**
  * Created by hujia on 2018/03/06
@@ -74,8 +74,9 @@ public class SiChuanggzyjyw extends BaseSnatch {
                     }
                     SnatchLogger.debug("第" + pagelist + "页");
                     conn = Jsoup.connect(url).userAgent("Mozilla").timeout(1000 * 60).ignoreContentType(true).ignoreHttpErrors(true);
+                    String docStr = conn.execute().body();
 
-                    JSONObject object = new JSONObject(conn.execute().body());
+                    JSONObject object = new JSONObject(docStr);
                     if (pagelist == 1) {
                         page = object.getInt("pageCount");
                         pageTemp = page;
@@ -149,24 +150,41 @@ public class SiChuanggzyjyw extends BaseSnatch {
     public Notice detail(String href, Notice notice, String catchType) throws Exception {
         Document docCount = Jsoup.parse(new URL(href).openStream(), "utf-8", href);
         String title = docCount.select(".titFontname").text();
-        Element trs = null;
-        if (href.contains("Purchase")) {
-            Elements elements = docCount.select(".deMidd_Nei").select(".Nmds[style='display: block;']");
-            if (elements.html().length() < 300) {
-                trs = docCount.select(".detailedIntroduc").select(".Introduce").select("input").first();
-            } else {
-                trs = elements.select(".detailedIntroduc").select(".Introduce").select("input").first();
+        Element content = null;
+        if ("政府采购".equals(notice.getNoticeType())) {
+            if (notice.getCatchType().equals(ZHAO_BIAO_TYPE)) {
+                content = docCount.select("div #divOne0").select("input").first();
+            } else if (notice.getCatchType().equals(GENG_ZHENG_TYPE)) {
+                content = docCount.select("div #divTwo0").select("input").first();
+            } else if (notice.getCatchType().equals(ZHONG_BIAO_TYPE)) {
+                content = docCount.select("div #hidThree0").select("input").first();
+            } else if (notice.getCatchType().equals(HE_TONG_TYPE)) {
+                content = docCount.select(".detailedIntroduc").last();
+                notice.setContent(content.text());
+            }
+            if(content != null && StringUtils.isEmpty(content.html()) && !notice.getCatchType().equals(HE_TONG_TYPE)) {
+                notice.setContent(content.attr("value"));
             }
         } else {
-            Elements elements = docCount.select(".deMidd_Nei").select(".deMNei[style='display: block;']");
-            if (elements.html().length() < 300) {
-                trs = docCount.select(".deMNei_middle").select(".MMdNei").select("input").first();
+            if (notice.getCatchType().equals(ZHAO_BIAO_TYPE)) {
+                content = docCount.select("div #divOne0").select("input").first();
+            } else if (notice.getCatchType().equals(GENG_ZHENG_TYPE)) {
+                content = docCount.select("div #divTwo0").select("input").first();
+            } else if (notice.getCatchType().equals(ZHONG_ZHI_TYPE)) {
+                content = docCount.select("div #divTwo0").select("input").first();
+            } else if (notice.getCatchType().equals(ZHONG_BIAO_TYPE)) {
+                content = docCount.select("div #divSeven0").select("input").first();
+            } else if (notice.getCatchType().equals(CHENG_QING_TYPE)) {
+                content = docCount.select("div #hidFive0").select("input").first();
+            } else if (notice.getCatchType().equals(HE_TONG_TYPE)) {
+                content = docCount.select("div #divSix0").select("input").first();
             } else {
-                trs = elements.select(".deMNei_middle").select(".MMdNei").select("[type=hidden]").first();
+                content = docCount.select("div #divThree0").select("input").first();
+            }
+            if(content != null && StringUtils.isEmpty(content.html())) {
+                notice.setContent(content.attr("value"));
             }
         }
-        String content = trs.attr("value");
-        notice.setContent(content);
         notice.setTitle(title);
         return notice;
     }
@@ -175,27 +193,29 @@ public class SiChuanggzyjyw extends BaseSnatch {
         String catchTypeNumber = "";
         if (i == 0) {
             if (catchType.equals("招标公告")) {
-                catchTypeNumber = "1";
-            } else if (catchType.equals("开标记录")) {
-                catchTypeNumber = "2";
-            } else if (catchType.equals("评标公示")) {
-                catchTypeNumber = "2";
-            } else if (catchType.equals("中标候选公示")) {
-                catchTypeNumber = "2";
-            } else if (catchType.equals("中标公告")) {
-                catchTypeNumber = "2";
+                catchTypeNumber = ZHAO_BIAO_TYPE;
+            } else if (catchType.equals("评标公示") || catchType.equals("中标候选公示") || catchType.equals("中标公告")) {
+                catchTypeNumber = ZHONG_BIAO_TYPE;
             } else if (catchType.equals("签约履行")) {
-                catchTypeNumber = "52";
+                catchTypeNumber = HE_TONG_TYPE;
+            } else if (catchType.equals("公告变更")) {
+                catchTypeNumber = GENG_ZHENG_TYPE;
+            } else if (catchType.equals("补遗/澄清")) {
+                catchTypeNumber = CHENG_QING_TYPE;
+            } else if (catchType.equals("流标或终止公告")) {
+                catchTypeNumber = ZHONG_ZHI_TYPE;
+            } else if (catchType.equals("开标记录")) {
+                catchTypeNumber = OTHER_TYPE;
             }
         } else {
             if (catchType.equals("采购公告")) {
-                catchTypeNumber = "1";
+                catchTypeNumber = ZHAO_BIAO_TYPE;
             } else if (catchType.equals("更正公告")) {
-                catchTypeNumber = "16";
+                catchTypeNumber = GENG_ZHENG_TYPE;
             } else if (catchType.equals("中标公告")) {
-                catchTypeNumber = "2";
+                catchTypeNumber = ZHONG_BIAO_TYPE;
             } else if (catchType.equals("签约履行")) {
-                catchTypeNumber = "52";
+                catchTypeNumber = HE_TONG_TYPE;
             }
         }
         return catchTypeNumber;
