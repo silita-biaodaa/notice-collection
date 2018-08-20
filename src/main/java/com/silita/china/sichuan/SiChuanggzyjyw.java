@@ -102,7 +102,6 @@ public class SiChuanggzyjyw extends BaseSnatch {
                         if (catchType.equals("签约履行")) {
                             continue;
                         }
-                        String catchTypeNumber = queryCatchTypeNumber(catchType, i);
                         //===入库代码====
                         Notice notice = new Notice();
                         notice.setDimension(dim);
@@ -110,15 +109,13 @@ public class SiChuanggzyjyw extends BaseSnatch {
                         notice.setProvinceCode("scs");
                         notice.setAreaRank(PROVINCE);
                         notice.setSnatchNumber(snatchNumber);
-                        notice = SnatchUtils.setCatchTypeByTitle(notice, title);
-                        if (SnatchUtils.isNull(notice.getCatchType())) {
-                            notice.setCatchType(catchTypeNumber);
-                        }
                         if (i == 1 || title.contains("采购")) {
                             notice.setNoticeType("政府采购");
                         } else {
                             notice.setNoticeType("工程建设");
                         }
+                        String catchTypeNumber = queryCatchTypeNumber(catchType, notice.getNoticeType());
+                        notice.setCatchType(catchTypeNumber);
                         notice.setUrl(href);
                         notice.setSource("sichuan");
                         notice.setOpendate(publishDate);
@@ -157,7 +154,7 @@ public class SiChuanggzyjyw extends BaseSnatch {
             } else if (notice.getCatchType().equals(GENG_ZHENG_TYPE)) {
                 content = docCount.select("#divTwo0").select("input").first();
             } else if (notice.getCatchType().equals(ZHONG_BIAO_TYPE)) {
-                content = docCount.select("#hidThree0").select("input").first();
+                content = docCount.select("#divThree0").select("input").first();
             } else if (notice.getCatchType().equals(HE_TONG_TYPE)) {
                 content = docCount.select(".detailedIntroduc").last();
                 notice.setContent(content.text());
@@ -175,7 +172,7 @@ public class SiChuanggzyjyw extends BaseSnatch {
             } else if (notice.getCatchType().equals(ZHONG_BIAO_TYPE)) {
                 content = docCount.select("#divSeven0").select("input").first();
             } else if (notice.getCatchType().equals(CHENG_QING_TYPE)) {
-                content = docCount.select("#hidFive0").select("input").first();
+                content = docCount.select("#divFive0").select("input").first();
             } else if (notice.getCatchType().equals(HE_TONG_TYPE)) {
                 content = docCount.select("#divSix0").select("input").first();
             } else {
@@ -189,9 +186,9 @@ public class SiChuanggzyjyw extends BaseSnatch {
         return notice;
     }
 
-    public String queryCatchTypeNumber(String catchType, int i) {
+    public String queryCatchTypeNumber(String catchType, String noticeType) {
         String catchTypeNumber = "";
-        if (i == 0) {
+        if ("工程建设".equals(noticeType)) {
             if (catchType.equals("招标公告")) {
                 catchTypeNumber = ZHAO_BIAO_TYPE;
             } else if (catchType.equals("评标公示") || catchType.equals("中标候选公示") || catchType.equals("中标公告")) {
